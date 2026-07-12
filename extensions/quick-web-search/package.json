@@ -1,0 +1,93 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "quick-web-search",
+  "title": "Quick Search",
+  "description": "Query Perplexity, Google, DuckDuckGo, Bing, or YouTube instantly with live suggestions. Assign a hotkey (like ⌘P) for quick access.",
+  "icon": "icon.png",
+  "author": "ramiruwanigathunga",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "categories": [
+    "Web",
+    "Productivity"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "search",
+      "title": "Quick Search",
+      "description": "Search Perplexity, Google, DuckDuckGo, Bing, or YouTube instantly.\n\nTip: assign a hotkey to this command — press it, type, hit Enter.",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "query",
+          "type": "text",
+          "placeholder": "Query",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "preferences": [
+    {
+      "name": "defaultEngine",
+      "title": "Default Search Engine",
+      "description": "Initial engine. The dropdown remembers your last selection.",
+      "type": "dropdown",
+      "required": false,
+      "default": "perplexity",
+      "data": [
+        {
+          "title": "Perplexity",
+          "value": "perplexity"
+        },
+        {
+          "title": "Google",
+          "value": "google"
+        },
+        {
+          "title": "DuckDuckGo",
+          "value": "duckduckgo"
+        },
+        {
+          "title": "Bing",
+          "value": "bing"
+        },
+        {
+          "title": "YouTube",
+          "value": "youtube"
+        }
+      ]
+    },
+    {
+      "name": "rememberHistory",
+      "title": "Search History",
+      "label": "Remember recent searches",
+      "description": "Show recent searches when the search bar is empty.",
+      "type": "checkbox",
+      "required": false,
+      "default": true
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.104.22",
+    "@raycast/utils": "^2.2.7"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.2.0",
+    "@types/node": "22.19.17",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "ray build -e dist -o dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
