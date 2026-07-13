@@ -1,6 +1,6 @@
 # Quick Search Changelog
 
-## [Initial Version] - {PR_MERGE_DATE}
+## [Initial Release] - {PR_MERGE_DATE}
 
 - Quick Search command with Perplexity, Google, DuckDuckGo, and Bing
 - Search bar engine dropdown with persisted selection and default-engine preference
