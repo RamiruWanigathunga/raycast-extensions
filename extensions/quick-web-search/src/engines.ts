@@ -32,6 +32,24 @@ function googleSuggestUrl(query: string): string {
 // Google's generic suggestions. All endpoints below are keyless and unauthenticated.
 export const ENGINES: Engine[] = [
   defineEngine({
+    id: "google",
+    title: "Google",
+    homepage: "https://www.google.com",
+    icon: "google.png",
+    searchUrl: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+    suggestUrl: googleSuggestUrl,
+  }),
+  defineEngine({
+    id: "google-ai",
+    title: "Google AI Mode",
+    homepage: "https://www.google.com",
+    icon: "google-ai-mode.png",
+    // AI Mode results page; the query must be plus-encoded, e.g.
+    // https://www.google.com/search?q=what+is+the+meaning+of+life&udm=50
+    searchUrl: (query) => `https://www.google.com/search?${new URLSearchParams({ q: query })}&udm=50`,
+    suggestUrl: googleSuggestUrl,
+  }),
+  defineEngine({
     id: "perplexity",
     title: "Perplexity",
     homepage: "https://www.perplexity.ai",
@@ -40,11 +58,11 @@ export const ENGINES: Engine[] = [
     suggestUrl: googleSuggestUrl,
   }),
   defineEngine({
-    id: "google",
-    title: "Google",
-    homepage: "https://www.google.com",
-    icon: "google.png",
-    searchUrl: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+    id: "bing",
+    title: "Bing",
+    homepage: "https://www.bing.com",
+    icon: "bing.png",
+    searchUrl: (query) => `https://www.bing.com/search?q=${encodeURIComponent(query)}`,
     suggestUrl: googleSuggestUrl,
   }),
   defineEngine({
@@ -54,14 +72,6 @@ export const ENGINES: Engine[] = [
     icon: "duckduckgo.png",
     searchUrl: (query) => `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
     suggestUrl: (query) => `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`,
-  }),
-  defineEngine({
-    id: "bing",
-    title: "Bing",
-    homepage: "https://www.bing.com",
-    icon: "bing.png",
-    searchUrl: (query) => `https://www.bing.com/search?q=${encodeURIComponent(query)}`,
-    suggestUrl: googleSuggestUrl,
   }),
   defineEngine({
     id: "youtube",

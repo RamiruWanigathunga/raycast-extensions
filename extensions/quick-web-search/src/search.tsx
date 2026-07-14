@@ -194,7 +194,7 @@ function SearchActions(props: {
       <ActionPanel.Section>
         {otherEngines.map((other) => (
           // The shortcut number is the engine's fixed position in ENGINES, so
-          // ⌘1–⌘4 always mean the same engine regardless of which is active.
+          // ⌘1–⌘6 always mean the same engine regardless of which is active.
           <OpenSearchAction
             key={other.id}
             title={`Search ${other.title} Instead`}

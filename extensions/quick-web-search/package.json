@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "quick-web-search",
   "title": "Quick Search",
-  "description": "Query Perplexity, Google, DuckDuckGo, Bing, or YouTube instantly with live suggestions. Assign a hotkey (like ⌘P) for quick access.",
+  "description": "Query Perplexity, Google, Google AI Mode, DuckDuckGo, Bing, or YouTube instantly with live suggestions. Assign a hotkey (like ⌘P) for quick access.",
   "icon": "icon.png",
   "author": "ramiruwanigathunga",
   "platforms": [
@@ -18,7 +18,7 @@
     {
       "name": "search",
       "title": "Quick Search",
-      "description": "Search Perplexity, Google, DuckDuckGo, Bing, or YouTube instantly.\n\nTip: assign a hotkey to this command — press it, type, hit Enter.",
+      "description": "Search Perplexity, Google, Google AI Mode, DuckDuckGo, Bing, or YouTube instantly.\n\nTip: assign a hotkey to this command — press it, type, hit Enter.",
       "mode": "view",
       "arguments": [
         {
@@ -37,23 +37,27 @@
       "description": "Initial engine. The dropdown remembers your last selection.",
       "type": "dropdown",
       "required": false,
-      "default": "perplexity",
+      "default": "google",
       "data": [
-        {
-          "title": "Perplexity",
-          "value": "perplexity"
-        },
         {
           "title": "Google",
           "value": "google"
         },
         {
-          "title": "DuckDuckGo",
-          "value": "duckduckgo"
+          "title": "Google AI Mode",
+          "value": "google-ai"
+        },
+        {
+          "title": "Perplexity",
+          "value": "perplexity"
         },
         {
           "title": "Bing",
           "value": "bing"
+        },
+        {
+          "title": "DuckDuckGo",
+          "value": "duckduckgo"
         },
         {
           "title": "YouTube",
