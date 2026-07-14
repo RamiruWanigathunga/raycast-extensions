@@ -12,9 +12,21 @@ import {
   openExtensionPreferences,
 } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { ENGINES, Engine, getEngine, parseSuggestions } from "./engines";
 import { useSearchHistory } from "./history";
+
+// The search text must update state on every keystroke so an instant ⏎ acts on
+// the full query (List's `throttle` debounces onSearchTextChange and made fast
+// submits search a truncated query). Only the suggestion fetch is debounced.
+function useDebounce<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timeout);
+  }, [value, delayMs]);
+  return debounced;
+}
 
 export default function Command(props: LaunchProps<{ arguments: Arguments.Search }>) {
   const { defaultEngine, rememberHistory } = getPreferenceValues<Preferences.Search>();
@@ -26,17 +38,21 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Search
   const [engineId, setEngineId] = useState<string | null>(null);
   const engine = engineId === null ? null : getEngine(engineId);
   const query = searchText.trim();
+  const debouncedQuery = useDebounce(query, 250);
   const history = useSearchHistory(rememberHistory);
 
-  const { data: suggestions, isLoading: isLoadingSuggestions } = useFetch((engine ?? ENGINES[0]).suggestUrl(query), {
-    execute: engine !== null && query.length > 0,
-    keepPreviousData: true,
-    parseResponse: parseSuggestions,
-    initialData: [],
-    // Suggestions must degrade silently (e.g. offline) — without a handler,
-    // useFetch shows a failure toast on every throttled keystroke.
-    onError: () => {},
-  });
+  const { data: suggestions, isLoading: isLoadingSuggestions } = useFetch(
+    (engine ?? ENGINES[0]).suggestUrl(debouncedQuery),
+    {
+      execute: engine !== null && debouncedQuery.length > 0,
+      keepPreviousData: true,
+      parseResponse: parseSuggestions,
+      initialData: [],
+      // Suggestions must degrade silently (e.g. offline) — without a handler,
+      // useFetch shows a failure toast on every throttled keystroke.
+      onError: () => {},
+    },
+  );
 
   return (
     <List
@@ -44,7 +60,6 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Search
       searchText={searchText}
       onSearchTextChange={setSearchText}
       filtering={false}
-      throttle
       searchBarPlaceholder={engine ? `Search ${engine.title}…` : "Search…"}
       searchBarAccessory={
         <List.Dropdown tooltip="Search Engine" storeValue defaultValue={defaultEngine} onChange={setEngineId}>
