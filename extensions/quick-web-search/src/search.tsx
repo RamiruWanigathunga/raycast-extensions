@@ -5,20 +5,46 @@ import {
   Keyboard,
   LaunchProps,
   List,
+  LocalStorage,
   PopToRootType,
+  Toast,
   closeMainWindow,
   getPreferenceValues,
   open,
   openExtensionPreferences,
+  showToast,
 } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { ReactNode, useEffect, useState } from "react";
-import { ENGINES, Engine, getEngine, parseSuggestions } from "./engines";
+import { ENGINES, Engine, getEngine, getLastEngine, parseSuggestions, rememberEngine } from "./engines";
 import { useSearchHistory } from "./history";
 
 // The search text must update state on every keystroke so an instant ⏎ acts on
 // the full query (List's `throttle` debounces onSearchTextChange and made fast
 // submits search a truncated query). Only the suggestion fetch is debounced.
+// Raycast can mount the command component more than once for a single
+// fallback launch, and a per-mount useEffect guard (or ref) resets with each
+// mount — so the same query opened two browser tabs. This module-level flag
+// survives remounts within one command process.
+let instantLaunchStarted = false;
+
+// Raycast has no manifest/API hook to register a fallback command on install —
+// the user must enable it via root search's "Manage Fallback Commands". The
+// closest supported behavior is a one-time tip on first launch pointing there.
+const FALLBACK_TIP_KEY = "fallback-tip-shown";
+
+async function showFallbackTipOnce() {
+  if (await LocalStorage.getItem<boolean>(FALLBACK_TIP_KEY)) {
+    return;
+  }
+  await LocalStorage.setItem(FALLBACK_TIP_KEY, true);
+  await showToast({
+    style: Toast.Style.Success,
+    title: "Tip: Use Quick Search as a Fallback Command",
+    message: 'Search "Manage Fallback Commands" in Raycast and enable Quick Search.',
+  });
+}
+
 function useDebounce<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -28,9 +54,14 @@ function useDebounce<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-export default function Command(props: LaunchProps<{ arguments: Arguments.Search }>) {
-  const { defaultEngine, rememberHistory } = getPreferenceValues<Preferences.Search>();
-  const [searchText, setSearchText] = useState(props.arguments.query || props.fallbackText || "");
+export default function Command(props: LaunchProps) {
+  const { defaultEngine, rememberHistory, instantFallback } = getPreferenceValues<Preferences.Search>();
+  const [searchText, setSearchText] = useState(props.fallbackText || "");
+  // Fallback launches (user picked this command from root search's fallback
+  // list) skip the UI entirely when the preference is on: open the browser
+  // with the last-used engine and close the window.
+  const fallbackQuery = (props.fallbackText ?? "").trim();
+  const isInstantLaunch = instantFallback && fallbackQuery.length > 0;
   // The dropdown's storeValue restores the last-used engine and reports it via
   // onChange right after mount. Until then the active engine is unknown, so
   // nothing actionable is rendered — otherwise an instant ⏎ on a prefilled
@@ -54,6 +85,39 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Search
     },
   );
 
+  useEffect(() => {
+    if (props.launchContext !== undefined || props.fallbackText !== undefined) {
+      // Launched as a fallback already (or programmatically) — the tip is moot.
+      LocalStorage.setItem(FALLBACK_TIP_KEY, true);
+      return;
+    }
+    showFallbackTipOnce();
+    // Launch-time values; run once on mount.
+  }, []);
+
+  useEffect(() => {
+    if (!isInstantLaunch || instantLaunchStarted) {
+      return;
+    }
+    instantLaunchStarted = true;
+    (async () => {
+      // History and browser-open run in parallel to close the window as fast
+      // as possible; clearRootSearch + Immediate pop return Raycast to an
+      // empty root search instead of the fallback view with the old query.
+      await Promise.all([
+        history.add(fallbackQuery),
+        getLastEngine(defaultEngine).then((lastEngine) => open(lastEngine.searchUrl(fallbackQuery))),
+      ]);
+      await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
+    })();
+    // Launch-time values; run once on mount.
+  }, []);
+
+  if (isInstantLaunch) {
+    // Nothing to show — the window is closing.
+    return null;
+  }
+
   return (
     <List
       isLoading={engine === null || history.isLoading || (query.length > 0 && isLoadingSuggestions)}
@@ -62,7 +126,15 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Search
       filtering={false}
       searchBarPlaceholder={engine ? `Search ${engine.title}…` : "Search…"}
       searchBarAccessory={
-        <List.Dropdown tooltip="Search Engine" storeValue defaultValue={defaultEngine} onChange={setEngineId}>
+        <List.Dropdown
+          tooltip="Search Engine"
+          storeValue
+          defaultValue={defaultEngine}
+          onChange={(id) => {
+            setEngineId(id);
+            rememberEngine(id);
+          }}
+        >
           {ENGINES.map((item) => (
             <List.Dropdown.Item key={item.id} title={item.title} value={item.id} icon={item.icon} />
           ))}

@@ -18,16 +18,8 @@
     {
       "name": "search",
       "title": "Quick Search",
-      "description": "Search Perplexity, Google, Google AI Mode, DuckDuckGo, Bing, or YouTube instantly.\n\nTip: assign a hotkey to this command — press it, type, hit Enter.",
-      "mode": "view",
-      "arguments": [
-        {
-          "name": "query",
-          "type": "text",
-          "placeholder": "Query",
-          "required": false
-        }
-      ]
+      "description": "Search Perplexity, Google, Google AI Mode, DuckDuckGo, Bing, or YouTube instantly.\n\nTips: assign a hotkey to this command — press it, type, hit Enter. Add it as a fallback command (Raycast root search → ⌘K → Manage Fallback Commands) to search any root-search text in one step.",
+      "mode": "view"
     }
   ],
   "preferences": [
@@ -70,6 +62,15 @@
       "title": "Search History",
       "label": "Remember recent searches",
       "description": "Show recent searches when the search bar is empty.",
+      "type": "checkbox",
+      "required": false,
+      "default": true
+    },
+    {
+      "name": "instantFallback",
+      "title": "Fallback Behavior",
+      "label": "Search immediately when used as a fallback command",
+      "description": "When Quick Search is triggered as a fallback command, open the browser instantly with the last-used engine. Disable to prefill the query in the search bar instead.",
       "type": "checkbox",
       "required": false,
       "default": true

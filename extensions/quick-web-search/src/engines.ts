@@ -1,4 +1,4 @@
-import { Icon, Image } from "@raycast/api";
+import { Icon, Image, LocalStorage } from "@raycast/api";
 import { getFavicon } from "@raycast/utils";
 
 export interface Engine {
@@ -86,6 +86,19 @@ export const ENGINES: Engine[] = [
 
 export function getEngine(id: string | undefined): Engine {
   return ENGINES.find((engine) => engine.id === id) ?? ENGINES[0];
+}
+
+// The dropdown's storeValue storage is not readable by code, so the selection
+// is mirrored here for the instant fallback path.
+const LAST_ENGINE_KEY = "last-engine";
+
+export async function rememberEngine(id: string): Promise<void> {
+  await LocalStorage.setItem(LAST_ENGINE_KEY, id);
+}
+
+export async function getLastEngine(fallbackId: string): Promise<Engine> {
+  const stored = await LocalStorage.getItem<string>(LAST_ENGINE_KEY);
+  return getEngine(typeof stored === "string" ? stored : fallbackId);
 }
 
 // Google and DuckDuckGo (`type=list`) both return the OpenSearch suggestion
